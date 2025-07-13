@@ -1,255 +1,52 @@
 # DBChatPro Advanced React Client
 
-An advanced React client for DBChatPro API built with modern technologies and best practices.
+An enterprise-grade React client for DBChatPro with advanced features, MCP (Model Context Protocol) integration, and comprehensive monitoring capabilities.
 
 ## 🚀 Features
 
-### **Advanced UI/UX**
-- **shadcn/ui** - Modern, accessible UI components
-- **Tailwind CSS** - Utility-first CSS framework
-- **Responsive Design** - Works on all devices
-- **Dark/Light Mode** - Built-in theme support
-- **Loading States** - Smooth user experience
-- **Error Handling** - Comprehensive error management
+### Core Features
+- **Database Connections**: Manage multiple database connections with real-time status
+- **AI-Powered Query Generation**: Generate SQL queries using natural language
+- **Query History**: Track and manage query execution history
+- **Real-time Results**: View query results with advanced data visualization
 
-### **Data Management**
-- **TanStack Query** - Powerful data fetching and caching
-- **Zustand** - Lightweight state management
-- **React Hook Form** - Performant form handling
-- **Zod** - Type-safe schema validation
+### Enterprise Features
+- **MCP Integration**: Full Model Context Protocol support with real-time status monitoring
+- **Enterprise Dashboard**: Comprehensive system monitoring and metrics
+- **Audit Logging**: Complete audit trail with filtering and search capabilities
+- **System Configuration**: Enterprise-grade configuration management with encryption support
+- **Session Management**: Advanced user session handling and validation
+- **Real-time Monitoring**: Live system metrics and performance tracking
 
-### **Advanced Tables**
-- **TanStack Table** - Feature-rich table component
-- **Sorting** - Multi-column sorting
-- **Filtering** - Global and column-specific filters
-- **Pagination** - Built-in pagination
-- **Virtual Scrolling** - Performance for large datasets
-- **Export** - CSV/Excel export capabilities
+### Advanced UI/UX
+- **Modern Design**: Built with shadcn/ui components and Tailwind CSS
+- **Responsive Layout**: Optimized for desktop and mobile devices
+- **Dark/Light Mode**: Automatic theme switching
+- **Real-time Updates**: Live data updates with WebSocket-like polling
+- **Advanced Tables**: TanStack Table integration with sorting, filtering, and pagination
 
-### **Database Management**
-- **Connection Management** - Add, edit, remove database connections
-- **Schema Visualization** - View database schemas
-- **Connection Status** - Real-time connection monitoring
-- **Persistent Storage** - Connections saved locally
+## 🛠 Technology Stack
 
-### **AI Query Generation**
-- **Natural Language to SQL** - AI-powered query generation
-- **Multiple AI Services** - OpenAI, Azure OpenAI, Ollama, GitHub Models, AWS Bedrock
-- **Query History** - Track and manage generated queries
-- **Query Export** - Download queries as SQL files
-- **Results Display** - Advanced table view for query results
-
-### **Advanced Features**
-- **Query History** - Comprehensive history management
-- **Search & Filtering** - Advanced search capabilities
-- **Statistics Dashboard** - Usage analytics
-- **Settings Management** - Comprehensive configuration
-- **Toast Notifications** - User feedback system
-
-## 🛠️ Tech Stack
-
-### **Core**
-- **React 18** - Latest React features
-- **TypeScript** - Type safety
-- **Vite** - Fast build tool
-- **React Router** - Client-side routing
-
-### **UI & Styling**
-- **shadcn/ui** - Modern UI components
-- **Tailwind CSS** - Utility-first CSS
-- **Lucide React** - Beautiful icons
-- **class-variance-authority** - Component variants
-
-### **Data & State**
-- **TanStack Query** - Data fetching & caching
-- **Zustand** - State management
-- **React Hook Form** - Form handling
-- **Zod** - Schema validation
-
-### **Tables & Data**
-- **TanStack Table** - Advanced table features
-- **TanStack Virtual** - Virtual scrolling
-- **date-fns** - Date utilities
-
-### **Development**
-- **ESLint** - Code linting
-- **TypeScript** - Type checking
-- **Vite** - Development server
+- **React 18** with TypeScript
+- **TanStack Query** for server state management
+- **TanStack Table** for advanced data tables
+- **shadcn/ui** for modern UI components
+- **Tailwind CSS** for styling
+- **React Router** for navigation
+- **Zustand** for client state management
+- **Axios** for HTTP requests
+- **React Hook Form** with Zod validation
+- **Lucide React** for icons
+- **date-fns** for date manipulation
 
 ## 📦 Installation
 
 ```bash
-# Navigate to the advanced client directory
-cd react-client-advanced
-
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
-```
-
-## 🏗️ Project Structure
-
-```
-react-client-advanced/
-├── src/
-│   ├── components/
-│   │   ├── ui/                 # shadcn/ui components
-│   │   │   ├── button.tsx
-│   │   │   ├── input.tsx
-│   │   │   └── data-table.tsx
-│   │   ├── Layout.tsx          # Main layout component
-│   │   ├── DatabaseConnections.tsx
-│   │   ├── QueryGenerator.tsx
-│   │   ├── QueryHistory.tsx
-│   │   ├── Settings.tsx
-│   │   ├── ConnectionTableColumns.tsx
-│   │   └── ResultsTableColumns.tsx
-│   ├── hooks/
-│   │   └── useQueries.ts       # TanStack Query hooks
-│   ├── services/
-│   │   └── api.ts              # API service layer
-│   ├── stores/
-│   │   └── connectionStore.ts  # Zustand store
-│   ├── types/
-│   │   └── api.ts              # TypeScript types
-│   ├── lib/
-│   │   └── utils.ts            # Utility functions
-│   ├── App.tsx                 # Main app component
-│   ├── main.tsx                # Entry point
-│   └── index.css               # Global styles
-├── public/                     # Static assets
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-├── vite.config.ts
-└── README.md
-```
-
-## 🎯 Key Components
-
-### **DatabaseConnections**
-- Connection management with form validation
-- Real-time connection status
-- Schema visualization
-- Advanced table with sorting/filtering
-- Connection cards with quick actions
-
-### **QueryGenerator**
-- Natural language to SQL conversion
-- Multiple AI service support
-- Real-time query generation
-- Advanced results display with TanStack Table
-- Query export and copy functionality
-
-### **QueryHistory**
-- Comprehensive query history
-- Advanced search and filtering
-- Statistics dashboard
-- Export capabilities
-- Bulk operations
-
-### **Settings**
-- Application configuration
-- AI service configuration
-- Database settings
-- Advanced options
-- Import/export settings
-
-## 🔧 Configuration
-
-### **Environment Variables**
-Create a `.env` file in the root directory:
-
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_APP_NAME=DBChatPro Advanced
-```
-
-### **API Configuration**
-The client is configured to proxy API requests to the .NET API:
-
-```typescript
-// vite.config.ts
-export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
-      }
-    }
-  }
-})
-```
-
-## 🚀 Advanced Features
-
-### **TanStack Query Integration**
-```typescript
-// Custom hooks for data fetching
-const { data: connections, isLoading } = useConnections();
-const { mutate: connectDatabase, isPending } = useConnectDatabase();
-```
-
-### **Zustand State Management**
-```typescript
-// Persistent connection store
-const { connections, addConnection, removeConnection } = useConnectionStore();
-```
-
-### **React Hook Form with Zod**
-```typescript
-// Type-safe form validation
-const form = useForm<ConnectionFormData>({
-  resolver: zodResolver(connectionSchema)
-});
-```
-
-### **TanStack Table Features**
-```typescript
-// Advanced table with sorting, filtering, pagination
-const table = useReactTable({
-  data,
-  columns,
-  getSortedRowModel: getSortedRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-});
-```
-
-## 🎨 UI Components
-
-### **shadcn/ui Components**
-- **Button** - Multiple variants and sizes
-- **Input** - Form inputs with validation
-- **DataTable** - Advanced table component
-- **Toast** - Notification system
-
-### **Custom Components**
-- **Layout** - Responsive sidebar layout
-- **Connection Cards** - Visual connection management
-- **Query Results** - Advanced data display
-- **Statistics Cards** - Usage analytics
-
-## 🔄 Data Flow
-
-1. **User Action** → React Hook Form validation
-2. **Valid Data** → TanStack Query mutation
-3. **API Call** → DBChatPro API
-4. **Response** → Zustand store update
-5. **UI Update** → Component re-render
-6. **Toast Notification** → User feedback
-
-## 🧪 Testing
-
-```bash
-# Run linting
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
 
 # Build for production
 npm run build
@@ -258,97 +55,207 @@ npm run build
 npm run preview
 ```
 
-## 🚀 Deployment
+## 🏗 Project Structure
 
-### **Build for Production**
+```
+src/
+├── components/
+│   ├── ui/                 # shadcn/ui components
+│   ├── DatabaseConnections.tsx
+│   ├── QueryGenerator.tsx
+│   ├── QueryHistory.tsx
+│   ├── Settings.tsx
+│   ├── EnterpriseDashboard.tsx    # Enterprise dashboard
+│   ├── MCPQueryInterface.tsx      # MCP query interface
+│   └── SystemConfiguration.tsx    # System configuration
+├── hooks/
+│   └── useEnterprise.ts           # Enterprise hooks
+├── services/
+│   └── api.ts                     # API service layer
+├── stores/
+│   └── connectionStore.ts         # Zustand stores
+├── types/
+│   └── api.ts                     # TypeScript definitions
+└── lib/
+    └── utils.ts                   # Utility functions
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_MCP_SERVER_URL=ws://localhost:3001
+VITE_ENABLE_ENTERPRISE_FEATURES=true
+```
+
+### API Endpoints
+
+The client integrates with the following enterprise endpoints:
+
+- `GET /api/enterprise/audit-logs` - Retrieve audit logs
+- `GET /api/enterprise/metrics` - Get system metrics
+- `GET /api/enterprise/system-config` - Get system configurations
+- `POST /api/enterprise/system-config` - Update system configurations
+- `POST /api/enterprise/session` - Create user sessions
+- `GET /api/enterprise/mcp/status` - Get MCP connection status
+- `POST /api/enterprise/mcp/query` - Execute MCP queries
+
+## 🎯 Enterprise Features
+
+### MCP Integration
+
+The client provides full Model Context Protocol integration:
+
+- **Real-time Status**: Monitor MCP server connection status
+- **Query Interface**: Execute natural language queries through MCP
+- **Query History**: Track MCP query executions
+- **Metadata Tracking**: Monitor tokens used, processing time, and model information
+
+### Enterprise Dashboard
+
+Comprehensive monitoring dashboard with:
+
+- **System Metrics**: Real-time performance metrics
+- **Connection Status**: Database and MCP connection monitoring
+- **Audit Logs**: Filterable audit trail with pagination
+- **Weekly Statistics**: Query activity trends
+- **MCP Status**: Detailed MCP server information
+
+### System Configuration
+
+Enterprise-grade configuration management:
+
+- **Category-based Organization**: Organize configs by category
+- **Encryption Support**: Secure sensitive configuration values
+- **Audit Trail**: Track configuration changes
+- **Real-time Updates**: Live configuration updates
+
+### Audit Logging
+
+Complete audit trail system:
+
+- **Comprehensive Logging**: Track all user actions and system events
+- **Advanced Filtering**: Filter by date, user, action type
+- **Pagination**: Handle large audit log datasets
+- **Real-time Updates**: Live audit log updates
+
+## 🔒 Security Features
+
+- **Session Management**: Secure user session handling
+- **Authentication**: Bearer token authentication
+- **Request Tracking**: Unique request IDs for tracing
+- **Error Handling**: Comprehensive error handling and user feedback
+- **Input Validation**: Client-side validation with Zod schemas
+
+## 📊 Performance Features
+
+- **Query Caching**: TanStack Query for intelligent caching
+- **Optimistic Updates**: Immediate UI feedback
+- **Background Refetching**: Automatic data updates
+- **Virtual Scrolling**: Efficient rendering of large datasets
+- **Debounced Input**: Optimized search and filtering
+
+## 🎨 UI/UX Features
+
+- **Modern Design**: Clean, professional interface
+- **Responsive Layout**: Works on all device sizes
+- **Accessibility**: WCAG compliant components
+- **Loading States**: Comprehensive loading indicators
+- **Error States**: User-friendly error handling
+- **Toast Notifications**: Real-time user feedback
+
+## 🚀 Development
+
+### Code Quality
+
 ```bash
-npm run build
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+
+# Type checking
+npm run type-check
 ```
 
-### **Deploy to Vercel**
-```bash
-# Install Vercel CLI
-npm i -g vercel
+### Adding New Features
 
-# Deploy
-vercel
+1. **API Integration**: Add new endpoints to `src/services/api.ts`
+2. **Type Definitions**: Update `src/types/api.ts` with new types
+3. **Hooks**: Create custom hooks in `src/hooks/`
+4. **Components**: Build reusable components in `src/components/`
+5. **State Management**: Use Zustand for global state
+
+### Enterprise Feature Development
+
+When adding enterprise features:
+
+1. **Audit Logging**: Ensure all actions are logged
+2. **Error Handling**: Implement comprehensive error handling
+3. **Performance**: Consider impact on system performance
+4. **Security**: Validate all inputs and handle sensitive data
+5. **Testing**: Add comprehensive tests for new features
+
+## � Customization
+
+### Theming
+
+The client uses CSS custom properties for theming. Customize colors in `src/index.css`:
+
+```css
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  /* ... more variables */
+}
 ```
 
-### **Deploy to Netlify**
-```bash
-# Build the project
-npm run build
+### Component Styling
 
-# Deploy the dist folder
-```
+All components use Tailwind CSS classes and can be customized through the `tailwind.config.js` file.
 
-## 🔧 Development
+## 📈 Monitoring
 
-### **Adding New Components**
-1. Create component in `src/components/`
-2. Add TypeScript types in `src/types/`
-3. Create custom hooks in `src/hooks/`
-4. Add to routing in `App.tsx`
+### Performance Monitoring
 
-### **Adding New API Endpoints**
-1. Add to `src/services/api.ts`
-2. Create query hooks in `src/hooks/useQueries.ts`
-3. Add types in `src/types/api.ts`
+- **Query Performance**: Track query execution times
+- **API Response Times**: Monitor API endpoint performance
+- **User Interactions**: Track user engagement metrics
+- **Error Rates**: Monitor application error rates
 
-### **Styling Guidelines**
-- Use Tailwind CSS classes
-- Follow shadcn/ui patterns
-- Use CSS variables for theming
-- Maintain responsive design
+### Health Checks
 
-## 📚 API Integration
-
-### **Database Connections**
-```typescript
-// Connect to database
-const result = await api.connectDatabase({
-  name: 'My Database',
-  databaseType: 'MSSQL',
-  connectionString: '...'
-});
-```
-
-### **AI Query Generation**
-```typescript
-// Generate SQL query
-const result = await api.generateQuery({
-  prompt: 'Show me top 10 customers',
-  aiModel: 'gpt-4',
-  aiService: 'OpenAI',
-  databaseType: 'MSSQL',
-  connectionString: '...'
-});
-```
-
-## 🎯 Performance Features
-
-- **TanStack Query Caching** - Intelligent data caching
-- **Virtual Scrolling** - Performance for large datasets
-- **Code Splitting** - Lazy-loaded components
-- **Optimized Builds** - Vite production optimizations
-- **Persistent State** - Zustand with persistence
-
-## 🔒 Security
-
-- **Input Validation** - Zod schema validation
-- **Type Safety** - TypeScript throughout
-- **Secure API Calls** - Axios with proper config
-- **Environment Variables** - Secure configuration
+- **MCP Connection**: Real-time MCP server status
+- **Database Connections**: Monitor database connectivity
+- **API Endpoints**: Health checks for all API endpoints
+- **System Resources**: Monitor system resource usage
 
 ## 🤝 Contributing
 
-1. Follow TypeScript best practices
-2. Use TanStack Query for data fetching
-3. Implement proper error handling
-4. Add loading states
-5. Write responsive components
-6. Follow shadcn/ui patterns
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new features
+5. Submit a pull request
 
 ## 📄 License
 
-This project maintains the same license as the original DBChatPro project.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For enterprise support and questions:
+
+- **Documentation**: Check the API documentation
+- **Issues**: Report bugs and feature requests
+- **Enterprise Support**: Contact the development team
+
+---
+
+Built with ❤️ for enterprise-grade database management and AI-powered query generation.

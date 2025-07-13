@@ -3,13 +3,24 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
-import { Database, SmartToy, History, Settings } from 'lucide-react';
+import { 
+  Database, 
+  SmartToy, 
+  History, 
+  Settings, 
+  BarChart3, 
+  Shield,
+  Zap,
+  Activity
+} from 'lucide-react';
 
 import { Layout } from '@/components/Layout';
 import { DatabaseConnections } from '@/components/DatabaseConnections';
 import { QueryGenerator } from '@/components/QueryGenerator';
 import { QueryHistory } from '@/components/QueryHistory';
 import { Settings as SettingsPage } from '@/components/Settings';
+import { EnterpriseDashboard } from '@/components/EnterpriseDashboard';
+import { MCPQueryInterface } from '@/components/MCPQueryInterface';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -24,6 +35,8 @@ const queryClient = new QueryClient({
 const navigation = [
   { name: 'Connections', href: '/', icon: Database },
   { name: 'Query Generator', href: '/query', icon: SmartToy },
+  { name: 'MCP Interface', href: '/mcp', icon: Zap },
+  { name: 'Enterprise', href: '/enterprise', icon: BarChart3 },
   { name: 'History', href: '/history', icon: History },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
@@ -37,6 +50,8 @@ function App() {
             <Routes>
               <Route path="/" element={<DatabaseConnections />} />
               <Route path="/query" element={<QueryGenerator />} />
+              <Route path="/mcp" element={<MCPQueryInterface />} />
+              <Route path="/enterprise" element={<EnterpriseDashboard />} />
               <Route path="/history" element={<QueryHistory />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>

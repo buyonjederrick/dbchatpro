@@ -1,15 +1,20 @@
 {
-  "name": "dbchatpro-react-advanced",
-  "version": "1.0.0",
-  "description": "Advanced React client for DBChatPro API with TanStack Query, TanStack Table, and shadcn/ui",
+  "name": "dbchatpro-react-enterprise",
+  "version": "2.0.0",
+  "description": "Enterprise-grade React client for DBChatPro with MCP integration, advanced monitoring, and comprehensive features",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext ts,tsx --fix"
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -29,6 +34,18 @@
     "date-fns": "^2.30.0",
     "react-router-dom": "^6.20.0",
     "zustand": "^4.4.0",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-switch": "^1.0.3",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
+    "recharts": "^2.8.0",
     "react-query-devtools": "^3.2.0"
   },
   "devDependencies": {
@@ -45,6 +62,40 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.0"
-  }
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "prettier": "^3.0.0",
+    "vitest": "^0.34.0",
+    "@vitest/ui": "^0.34.0",
+    "@vitest/coverage-v8": "^0.34.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/user-event": "^14.5.0",
+    "jsdom": "^22.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "database",
+    "ai",
+    "enterprise",
+    "mcp",
+    "model-context-protocol",
+    "query-generation",
+    "monitoring",
+    "dashboard"
+  ],
+  "author": "DBChatPro Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dbchatpro/react-client-enterprise.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dbchatpro/react-client-enterprise/issues"
+  },
+  "homepage": "https://github.com/dbchatpro/react-client-enterprise#readme"
 }
