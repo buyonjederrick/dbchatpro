@@ -47,6 +47,17 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 // Register enterprise services
 builder.Services.AddScoped<IEnterpriseService, EnterpriseService>();
+
+// Register HttpClient for MCP service
+builder.Services.AddHttpClient<IMCPService, MCPService>(client =>
+{
+    // Configure the HttpClient to point to the MCP server
+    // The MCP server runs as a separate process, so we'll use localhost
+    client.BaseAddress = new Uri("http://localhost:5001/");
+    client.Timeout = TimeSpan.FromMinutes(5); // MCP operations can take time
+});
+
+// Register MCP service
 builder.Services.AddScoped<IMCPService, MCPService>();
 
 // Register DBChatPro services
