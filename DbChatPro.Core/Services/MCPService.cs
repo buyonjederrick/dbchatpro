@@ -2,6 +2,8 @@ using DbChatPro.Core.Models;
 using DbChatPro.Core.Repositories;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using System.Text;
+using System.Net.Http;
 
 namespace DbChatPro.Core.Services
 {
@@ -12,19 +14,22 @@ namespace DbChatPro.Core.Services
         private readonly IEnterpriseService _enterpriseService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<MCPService> _logger;
+        private readonly HttpClient _httpClient;
 
         public MCPService(
             IRepository<QueryHistory> queryHistoryRepository,
             IRepository<DatabaseConnection> connectionRepository,
             IEnterpriseService enterpriseService,
             IConfiguration configuration,
-            ILogger<MCPService> logger)
+            ILogger<MCPService> logger,
+            HttpClient httpClient)
         {
             _queryHistoryRepository = queryHistoryRepository;
             _connectionRepository = connectionRepository;
             _enterpriseService = enterpriseService;
             _configuration = configuration;
             _logger = logger;
+            _httpClient = httpClient;
         }
 
         public async Task<MCPQueryResult> ExecuteQueryAsync(string prompt, string aiModel, string aiPlatform, string? sessionId = null, string? userId = null)
@@ -45,23 +50,43 @@ namespace DbChatPro.Core.Services
                     throw new InvalidOperationException("No active database connection found");
                 }
 
-                // TODO: Integrate with actual MCP server call
-                // For now, simulate the MCP server response
-                var generatedSql = await GenerateSQLQueryAsync(prompt, aiModel, aiPlatform);
-                result.GeneratedSql = generatedSql;
-
-                // Simulate query execution
-                result.Results = new List<List<string>>
+                // Call MCP server to execute query
+                var mcpRequest = new
                 {
-                    new List<string> { "Sample", "Data", "Result" },
-                    new List<string> { "1", "Test", "Value" }
+                    prompt = prompt,
+                    aiModel = aiModel,
+                    aiPlatform = aiPlatform,
+                    databaseType = connection.DatabaseType,
+                    databaseConnectionString = connection.ConnectionString
                 };
 
-                result.IsSuccessful = true;
-                result.RowsReturned = result.Results.Count;
+                var json = JsonSerializer.Serialize(mcpRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Call the MCP server endpoint
+                var response = await _httpClient.PostAsync("/mcp/execute", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var mcpResponse = JsonSerializer.Deserialize<MCPExecuteResponse>(responseContent);
+
+                    if (mcpResponse != null)
+                    {
+                        result.GeneratedSql = mcpResponse.Query ?? "";
+                        result.Results = mcpResponse.Results ?? new List<List<string>>();
+                        result.IsSuccessful = true;
+                        result.RowsReturned = result.Results.Count;
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"MCP server error: {response.StatusCode} - {errorContent}");
+                }
 
                 // Log query history
-                await LogQueryHistoryAsync(connection.Id, prompt, generatedSql, aiModel, aiPlatform, true, null, result.RowsReturned, sessionId, userId);
+                await LogQueryHistoryAsync(connection.Id, prompt, result.GeneratedSql, aiModel, aiPlatform, true, null, result.RowsReturned, sessionId, userId);
 
                 // Log audit event
                 await _enterpriseService.LogAuditEventAsync(
@@ -117,9 +142,48 @@ namespace DbChatPro.Core.Services
             {
                 _logger.LogInformation("Generating SQL query for prompt: {Prompt}", prompt);
 
-                // TODO: Integrate with actual MCP server call
-                // For now, return a simulated SQL query
-                return $"SELECT * FROM SampleTable WHERE Description LIKE '%{prompt}%'";
+                // Get active database connection
+                var connections = await _connectionRepository.FindAsync(c => c.IsActive);
+                var connection = connections.FirstOrDefault();
+
+                if (connection == null)
+                {
+                    throw new InvalidOperationException("No active database connection found");
+                }
+
+                // Call MCP server to generate SQL
+                var mcpRequest = new
+                {
+                    prompt = prompt,
+                    aiModel = aiModel,
+                    aiPlatform = aiPlatform,
+                    databaseType = connection.DatabaseType,
+                    databaseConnectionString = connection.ConnectionString
+                };
+
+                var json = JsonSerializer.Serialize(mcpRequest);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Call the MCP server endpoint
+                var response = await _httpClient.PostAsync("/mcp/generate-sql", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var mcpResponse = JsonSerializer.Deserialize<MCPGenerateSQLResponse>(responseContent);
+
+                    if (mcpResponse != null)
+                    {
+                        return mcpResponse.Query ?? "";
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"MCP server error: {response.StatusCode} - {errorContent}");
+                }
+
+                return "";
             }
             catch (Exception ex)
             {
@@ -140,11 +204,33 @@ namespace DbChatPro.Core.Services
                     throw new InvalidOperationException("No active database connection found");
                 }
 
-                // TODO: Integrate with actual MCP server call
-                // For now, return a simulated schema
+                // Call MCP server to get schema
+                var response = await _httpClient.GetAsync("/mcp/schema");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var mcpResponse = JsonSerializer.Deserialize<MCPSchemaResponse>(responseContent);
+
+                    if (mcpResponse != null)
+                    {
+                        return new DatabaseSchema
+                        {
+                            SchemaRaw = mcpResponse.SchemaRaw ?? new string[0],
+                            DatabaseConnectionId = connection.Id,
+                            LastRefreshed = DateTime.UtcNow
+                        };
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"MCP server error: {response.StatusCode} - {errorContent}");
+                }
+
                 return new DatabaseSchema
                 {
-                    SchemaRaw = "Sample schema data",
+                    SchemaRaw = new string[0],
                     DatabaseConnectionId = connection.Id,
                     LastRefreshed = DateTime.UtcNow
                 };
@@ -168,9 +254,18 @@ namespace DbChatPro.Core.Services
                     return false;
                 }
 
-                // TODO: Integrate with actual MCP server call
-                // For now, simulate connection test
-                return true;
+                // Call MCP server to test connection
+                var response = await _httpClient.GetAsync("/mcp/status");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var mcpResponse = JsonSerializer.Deserialize<MCPStatusResponse>(responseContent);
+
+                    return mcpResponse?.IsConnected ?? false;
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
@@ -250,6 +345,8 @@ namespace DbChatPro.Core.Services
             {
                 var queryHistory = new QueryHistory
                 {
+                    Id = Guid.NewGuid(),
+                    DatabaseConnectionId = connectionId,
                     UserPrompt = userPrompt,
                     GeneratedSql = generatedSql,
                     AiModel = aiModel,
@@ -257,10 +354,9 @@ namespace DbChatPro.Core.Services
                     IsSuccessful = isSuccessful,
                     ErrorMessage = errorMessage,
                     RowsReturned = rowsReturned,
-                    DatabaseConnectionId = connectionId,
                     SessionId = sessionId,
                     UserId = userId,
-                    ExecutionTimeMs = 0 // Will be updated by the calling method
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 await _queryHistoryRepository.AddAsync(queryHistory);
@@ -269,6 +365,35 @@ namespace DbChatPro.Core.Services
             {
                 _logger.LogError(ex, "Failed to log query history");
             }
+        }
+
+        // MCP Response classes
+        private class MCPExecuteResponse
+        {
+            public string? Query { get; set; }
+            public List<List<string>>? Results { get; set; }
+            public bool IsSuccessful { get; set; }
+            public string? ErrorMessage { get; set; }
+        }
+
+        private class MCPGenerateSQLResponse
+        {
+            public string? Query { get; set; }
+            public bool IsSuccessful { get; set; }
+            public string? ErrorMessage { get; set; }
+        }
+
+        private class MCPSchemaResponse
+        {
+            public string[]? SchemaRaw { get; set; }
+            public bool IsSuccessful { get; set; }
+            public string? ErrorMessage { get; set; }
+        }
+
+        private class MCPStatusResponse
+        {
+            public bool IsConnected { get; set; }
+            public string? ErrorMessage { get; set; }
         }
     }
 }
