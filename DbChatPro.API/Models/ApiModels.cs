@@ -39,6 +39,10 @@ namespace DbChatPro.API.Models
         
         [Required]
         public string ConnectionString { get; set; } = string.Empty;
+        
+        public string? ConnectionName { get; set; }
+        public string? SessionId { get; set; }
+        public string? UserId { get; set; }
     }
 
     public class AIQueryResponse
@@ -47,6 +51,8 @@ namespace DbChatPro.API.Models
         public string Query { get; set; } = string.Empty;
         public List<Dictionary<string, object>>? Results { get; set; }
         public string? ErrorMessage { get; set; }
+        public int ExecutionTimeMs { get; set; }
+        public int RowsReturned { get; set; }
     }
 
     public class ChatRequest

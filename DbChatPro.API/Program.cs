@@ -5,6 +5,11 @@ using DBChatPro.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Azure;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
+using DbChatPro.Core.Data;
+using DbChatPro.Core.Repositories;
+using DbChatPro.Core.Services;
+using DbChatPro.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +38,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add Entity Framework
+builder.Services.AddDbContext<DbChatProContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register repositories
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// Register enterprise services
+builder.Services.AddScoped<IEnterpriseService, EnterpriseService>();
+builder.Services.AddScoped<IMCPService, MCPService>();
+
 // Register DBChatPro services
 builder.Services.AddScoped<AIService>();
 builder.Services.AddScoped<IDatabaseService, DatabaseManagerService>();
@@ -40,6 +56,9 @@ builder.Services.AddScoped<MySqlDatabaseService>();
 builder.Services.AddScoped<SqlServerDatabaseService>();
 builder.Services.AddScoped<PostgresDatabaseService>();
 builder.Services.AddScoped<OracleDatabaseService>();
+
+// Add HTTP context accessor for audit logging
+builder.Services.AddHttpContextAccessor();
 
 // Configure AWS Bedrock if profile is specified
 if (!string.IsNullOrEmpty(builder.Configuration["AWS:Profile"]))

@@ -1,0 +1,740 @@
+@page "/audit-logs"
+@using System.Text.Json
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Audit Logs - DBChatPro</PageTitle>
+
+<div class="audit-logs-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-history"></i>
+                Audit Logs
+            </h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" @onclick="RefreshLogs">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="ExportLogs">
+                    <i class="fas fa-download"></i>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>From Date</label>
+                <input type="date" @bind="fromDate" @bind:format="yyyy-MM-dd" class="form-control" />
+            </div>
+            <div class="filter-group">
+                <label>To Date</label>
+                <input type="date" @bind="toDate" @bind:format="yyyy-MM-dd" class="form-control" />
+            </div>
+            <div class="filter-group">
+                <label>User ID</label>
+                <input type="text" @bind="userId" placeholder="Enter user ID" class="form-control" />
+            </div>
+            <div class="filter-group">
+                <label>Action</label>
+                <select @bind="selectedAction" class="form-control">
+                    <option value="">All Actions</option>
+                    <option value="AI_QUERY_GENERATED">AI Query Generated</option>
+                    <option value="MCP_QUERY_EXECUTED">MCP Query Executed</option>
+                    <option value="DATABASE_CONNECTION_CREATED">Database Connection Created</option>
+                    <option value="SYSTEM_CONFIG_UPDATED">System Config Updated</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button class="btn btn-primary" @onclick="ApplyFilters">
+                    <i class="fas fa-search"></i>
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading audit logs...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Audit Logs Table -->
+        <div class="logs-section">
+            <div class="logs-header">
+                <h2>Audit Logs (@totalCount total)</h2>
+                <div class="pagination-info">
+                    Showing @((currentPage - 1) * pageSize + 1) to @Math.Min(currentPage * pageSize, totalCount) of @totalCount
+                </div>
+            </div>
+
+            <div class="logs-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>User</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (auditLogs?.Any() == true)
+                        {
+                            @foreach (var log in auditLogs)
+                            {
+                                <tr class="log-row @GetActionClass(log.Action)">
+                                    <td>@log.CreatedAt.ToString("MMM dd, yyyy HH:mm:ss")</td>
+                                    <td>
+                                        <span class="action-badge @GetActionClass(log.Action)">
+                                            @log.Action
+                                        </span>
+                                    </td>
+                                    <td>@log.EntityName</td>
+                                    <td>@(string.IsNullOrEmpty(log.UserName) ? log.UserId : log.UserName)</td>
+                                    <td>@log.IpAddress</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(log.AdditionalData))
+                                        {
+                                            <button class="btn-details" @onclick="() => ShowDetails(log)">
+                                                <i class="fas fa-eye"></i>
+                                                View
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="no-data">
+                                    No audit logs found for the selected criteria
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="pagination">
+                    <button class="btn-page" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage <= 1)">
+                        <i class="fas fa-chevron-left"></i>
+                        Previous
+                    </button>
+                    
+                    @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                    {
+                        <button class="btn-page @(i == currentPage ? "active" : "")" @onclick="() => ChangePage(i)">
+                            @i
+                        </button>
+                    }
+                    
+                    <button class="btn-page" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage >= totalPages)">
+                        Next
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Details Modal -->
+@if (showDetailsModal)
+{
+    <div class="modal-overlay" @onclick="CloseDetails">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>Audit Log Details</h3>
+                <button class="btn-close" @onclick="CloseDetails">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (selectedLog != null)
+                {
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Action:</label>
+                            <span>@selectedLog.Action</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Entity:</label>
+                            <span>@selectedLog.EntityName</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>User:</label>
+                            <span>@(string.IsNullOrEmpty(selectedLog.UserName) ? selectedLog.UserId : selectedLog.UserName)</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>IP Address:</label>
+                            <span>@selectedLog.IpAddress</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>User Agent:</label>
+                            <span>@selectedLog.UserAgent</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Timestamp:</label>
+                            <span>@selectedLog.CreatedAt.ToString("MMM dd, yyyy HH:mm:ss")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(selectedLog.AdditionalData))
+                        {
+                            <div class="detail-item full-width">
+                                <label>Additional Data:</label>
+                                <pre class="json-data">@selectedLog.AdditionalData</pre>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private List<dynamic>? auditLogs;
+    private int currentPage = 1;
+    private int pageSize = 50;
+    private int totalCount = 0;
+    private int totalPages = 0;
+    
+    // Filters
+    private DateTime? fromDate;
+    private DateTime? toDate;
+    private string? userId;
+    private string selectedAction = "";
+    
+    // Modal
+    private bool showDetailsModal = false;
+    private dynamic? selectedLog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuditLogs();
+    }
+
+    private async Task LoadAuditLogs()
+    {
+        try
+        {
+            isLoading = true;
+            
+            var queryParams = new List<string>
+            {
+                $"page={currentPage}",
+                $"pageSize={pageSize}"
+            };
+
+            if (fromDate.HasValue)
+                queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
+            
+            if (toDate.HasValue)
+                queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+            
+            if (!string.IsNullOrEmpty(userId))
+                queryParams.Add($"userId={userId}");
+            
+            if (!string.IsNullOrEmpty(selectedAction))
+                queryParams.Add($"action={selectedAction}");
+
+            var queryString = string.Join("&", queryParams);
+            var response = await Http.GetAsync($"api/enterprise/audit-logs?{queryString}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<dynamic>();
+                auditLogs = result?.data?.ToObject<List<dynamic>>();
+                totalCount = result?.totalCount ?? 0;
+                totalPages = result?.totalPages ?? 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading audit logs: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        currentPage = 1;
+        await LoadAuditLogs();
+    }
+
+    private async Task RefreshLogs()
+    {
+        await LoadAuditLogs();
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            await LoadAuditLogs();
+        }
+    }
+
+    private void ShowDetails(dynamic log)
+    {
+        selectedLog = log;
+        showDetailsModal = true;
+    }
+
+    private void CloseDetails()
+    {
+        showDetailsModal = false;
+        selectedLog = null;
+    }
+
+    private async Task ExportLogs()
+    {
+        // TODO: Implement export functionality
+        Console.WriteLine("Export functionality to be implemented");
+    }
+
+    private string GetActionClass(string action)
+    {
+        return action switch
+        {
+            "AI_QUERY_GENERATED" => "success",
+            "MCP_QUERY_EXECUTED" => "info",
+            "DATABASE_CONNECTION_CREATED" => "warning",
+            "SYSTEM_CONFIG_UPDATED" => "primary",
+            _ => "default"
+        };
+    }
+}
+
+<style>
+    .audit-logs-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-primary:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-outline-secondary:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.5);
+    }
+
+    .filters-section {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.875rem;
+    }
+
+    .form-control {
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .logs-section {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .logs-header {
+        padding: 25px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logs-header h2 {
+        margin: 0;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .pagination-info {
+        color: #718096;
+        font-size: 0.875rem;
+    }
+
+    .logs-table {
+        overflow-x: auto;
+    }
+
+    .logs-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .logs-table th {
+        background: #f7fafc;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #2d3748;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .logs-table td {
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+    }
+
+    .log-row:hover {
+        background: #f7fafc;
+    }
+
+    .action-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .action-badge.success {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .action-badge.info {
+        background: #bee3f8;
+        color: #2a4365;
+    }
+
+    .action-badge.warning {
+        background: #fef5e7;
+        color: #744210;
+    }
+
+    .action-badge.primary {
+        background: #e6fffa;
+        color: #234e52;
+    }
+
+    .action-badge.default {
+        background: #edf2f7;
+        color: #2d3748;
+    }
+
+    .btn-details {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-details:hover {
+        background: #5a67d8;
+    }
+
+    .no-data {
+        text-align: center;
+        color: #718096;
+        padding: 40px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 25px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-page {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-page:hover:not(:disabled) {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+    }
+
+    .btn-page.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 15px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+        padding: 25px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #718096;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-close:hover {
+        background: #f7fafc;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .detail-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .detail-item {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 15px;
+        align-items: start;
+    }
+
+    .detail-item.full-width {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-item label {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .detail-item span {
+        color: #4a5568;
+    }
+
+    .json-data {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        color: #2d3748;
+        white-space: pre-wrap;
+        overflow-x: auto;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px;
+        color: #718096;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .audit-logs-container {
+            padding: 15px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .header-content {
+            flex-direction: column;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .logs-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .detail-item {
+            grid-template-columns: 1fr;
+            gap: 5px;
+        }
+    }
+</style>
