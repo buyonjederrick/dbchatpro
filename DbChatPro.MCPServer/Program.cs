@@ -24,10 +24,24 @@ builder.Logging.AddConsole(consoleLogOptions =>
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    .WithTools<DbChatProServer>();
+    .WithTools<DbChatProServer>()
+    .WithTools<AdvancedDbChatProServer>()
+    .WithTools<EnterpriseDbChatProServer>();
 
+// Register core services
 builder.Services.AddScoped<SqlServerDatabaseService>();
 builder.Services.AddScoped<AIService>();
+
+// Register advanced services
+builder.Services.AddScoped<AdvancedAIService>();
+builder.Services.AddScoped<AdvancedDatabaseService>();
+
+// Register enterprise services
+builder.Services.AddScoped<EnterpriseAIService>();
+builder.Services.AddScoped<EnterpriseDatabaseService>();
+
+// Register AWS Bedrock runtime for enterprise features
+builder.Services.AddAWSService<Amazon.BedrockRuntime.IAmazonBedrockRuntime>();
 
 var host = builder.Build();
 

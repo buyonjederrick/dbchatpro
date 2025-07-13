@@ -11,6 +11,15 @@
     <PackageReference Include="MCPSharp" Version="1.0.11" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
     <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.1" />
+    <PackageReference Include="AWSSDK.BedrockRuntime" Version="3.7.300.0" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.300.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="0.1.0" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.13" />
+    <PackageReference Include="Azure.Identity" Version="1.10.4" />
+    <PackageReference Include="OpenAI" Version="1.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
